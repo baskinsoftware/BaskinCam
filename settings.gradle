@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // jitpack necessario solo se RootEncoder viene preso da jitpack invece che mavenCentral
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = "BaskinCam"
+include ':app'

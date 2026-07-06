@@ -1,0 +1,99 @@
+// BaskinCam - app/build.gradle
+// Autore: Daniele Lolli (UncleDan)
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'it.uncledan.baskincam'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "it.uncledan.baskincam"
+        minSdk 26
+        targetSdk 34
+        // Versioning: 1.2 su richiesta esplicita (deviazione puntuale dallo
+        // schema Mozilla a intero singolo puro - vedi nota in README.md).
+        versionCode 6
+        versionName "1.5"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Firma release opzionale via variabili d'ambiente (usate dalla GitHub
+    // Action release.yml). In locale, senza queste variabili, assembleRelease
+    // produce un APK non firmato: per l'uso quotidiano si usa assembleDebug.
+    signingConfigs {
+        release {
+            def kf = System.getenv("KEYSTORE_FILE")
+            if (kf != null) {
+                storeFile file(kf)
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // le build di debug portano il suffisso "-beta" nel versionName,
+            // riconoscibili a colpo d'occhio rispetto alla release
+            versionNameSuffix "-beta"
+        }
+        release {
+            minifyEnabled false // F-Droid: build riproducibile, niente offuscamento per ora
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // firma solo se il keystore e' configurato via ambiente
+            if (System.getenv("KEYSTORE_FILE") != null) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0' // AOSP-compatible, no Play Services
+
+    // LifecycleService: fa da LifecycleOwner per CameraX dentro il Foreground Service
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.4'
+
+    // Camera
+    implementation 'androidx.camera:camera-core:1.3.4'
+    implementation 'androidx.camera:camera-camera2:1.3.4'
+    implementation 'androidx.camera:camera-lifecycle:1.3.4'
+    implementation 'androidx.camera:camera-view:1.3.4'
+
+    // Detection palla (cosmetico) - MediaPipe Tasks Vision
+    // ATTENZIONE F-DROID: distribuito con librerie native precompilate (.so).
+    // Vedi nota nel README su compatibilita' F-Droid / anti-feature.
+    implementation 'com.google.mediapipe:tasks-vision:0.10.14'
+
+    // Streaming RTMP - RootEncoder (AGPL-3.0, pure Kotlin, build-from-source friendly)
+    implementation 'com.github.pedroSG94.RootEncoder:library:2.5.3'
+
+    // Web server locale per controllo remoto + ricezione punteggio
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+
+    // JSON
+    implementation 'org.json:json:20240303'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+}

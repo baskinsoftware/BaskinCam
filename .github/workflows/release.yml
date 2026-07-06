@@ -1,0 +1,79 @@
+name: Release APK
+
+# Si avvia al push di un tag "v*" (es. v1.5).
+# Produce:
+#  - un APK RELEASE firmato (se i segreti keystore sono configurati),
+#  - un APK DEBUG con suffisso "-beta",
+# entrambi allegati alla GitHub Release creata per il tag.
+#
+# Segreti richiesti per la firma release (Settings -> Secrets -> Actions):
+#   KEYSTORE_BASE64    -> il file .jks codificato in base64
+#   KEYSTORE_PASSWORD  -> password dello store
+#   KEY_ALIAS          -> alias della chiave
+#   KEY_PASSWORD       -> password della chiave
+# Se i segreti mancano, l'APK release viene comunque prodotto ma NON firmato.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decodifica keystore (se presente)
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/keystore.jks"
+
+      - name: Build APK release
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_BASE64 != '' && format('{0}/keystore.jks', runner.temp) || '' }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Rinomina APK release con la versione del tag
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release*.apk \
+             "out/BaskinCam-${GITHUB_REF_NAME}.apk"
+
+      - name: Build APK debug (-beta)
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Rinomina APK debug con suffisso -beta
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk \
+             "out/BaskinCam-${GITHUB_REF_NAME}-beta.apk"
+
+      - name: Pulisci keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/keystore.jks"
+
+      - name: Allega gli APK alla Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.apk
+          generate_release_notes: true

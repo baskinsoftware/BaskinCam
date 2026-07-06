@@ -1,0 +1,62 @@
+# Template metadata per fdroiddata (va proposto via merge request al repo
+# ufficiale F-Droid quando il progetto e' pronto: https://gitlab.com/fdroid/fdroiddata)
+#
+# NOTE IMPORTANTI DI COMPATIBILITA' - leggere prima di sottomettere:
+#
+# 1. MediaPipe Tasks Vision (com.google.mediapipe:tasks-vision) distribuisce
+#    librerie native precompilate (.so) non ricostruibili dal build server
+#    F-Droid a partire dai soli sorgenti Kotlin/Java del progetto. Questo e'
+#    un problema reale per l'accettazione: F-Droid richiede build riproducibili
+#    da sorgente. Opzioni:
+#      a) usare TensorFlow Lite "puro" (stesso problema di fondo, .so nativi,
+#         ma piu' comunemente accettato con anti-feature dichiarata)
+#      b) dichiarare l'anti-feature "NonFreeAssets" per i blob del modello
+#         (i modelli .tflite stessi sono dati, non codice, spesso tollerati
+#         se il codice che li usa e' FOSS - ma le librerie .so native restano
+#         il problema principale)
+#      c) contattare i maintainer F-Droid prima di investire tempo, per
+#         verificare se MediaPipe e' gia' stato accettato per altri progetti
+#         (precedente utile: alcune app F-Droid usano gia' TFLite con questo
+#         compromesso)
+#    Questo va chiarito PRIMA di investire tempo nell'integrazione detection.
+#
+# 2. RootEncoder e' AGPL-3.0, puro Kotlin, nessun problema di build.
+#
+# 3. NanoHTTPD e' BSD-3-Clause, nessun problema.
+#
+# 4. CameraX e Material Components sono AndroidX/Apache-2.0, nessun problema
+#    (NON sono Google Play Services, sono librerie AOSP standard).
+#
+# 5. Nessuna dipendenza da Google Play Services, Firebase, o Google Maps:
+#    coerente con i requisiti F-Droid.
+
+Categories:
+  - Multimedia
+  - Sport
+License: AGPL-3.0-or-later
+SourceCode: https://github.com/UncleDan/baskincam
+IssueTracker: https://github.com/UncleDan/baskincam/issues
+
+AutoName: BaskinCam
+Summary: Telecamera intelligente per streaming partite di Baskin
+Description: |-
+    BaskinCam trasforma uno smartphone Android dismesso in una regia
+    automatica per lo streaming di partite di Baskin: segue l'azione con
+    pan/zoom digitale basato su detection della palla, e sovrappone un
+    tabellone punteggio fedele allo stile dell'app Tabellone Baskin.
+
+RepoType: git
+Repo: https://github.com/UncleDan/baskincam.git
+
+Builds:
+  - versionName: '1.5'
+    versionCode: 6
+    commit: v1.5
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.5'
+CurrentVersionCode: 6
