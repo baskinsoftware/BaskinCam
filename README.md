@@ -32,10 +32,9 @@ esatta della libreria).
 Per l'uso quotidiano (sia solo-tabellone-di-rete che streaming completo),
 vedi **[USAGE.md](USAGE.md)**.
 
-Deliberatamente rimandato: la questione F-Droid/MediaPipe (vedi sezione
-dedicata sotto) e una licenza definitiva (vedi `LICENSE.md`) - il progetto
-oggi è una app compilabile e installabile via sideload, non ancora pronta
-per la distribuzione F-Droid.
+Il progetto oggi è una app compilabile e installabile via sideload/GitHub
+Releases; la pubblicazione su Google Play Store è preparata ma non ancora
+attiva (vedi `COMPILAZIONE-E-RELEASE.md` §5).
 
 ## Configurazione URL RTMP
 
@@ -137,23 +136,24 @@ stato interno (`scores`, `fouls`, `timeoutsUsed`, `names`, `colors`,
 `period`, `remainingMs`, `running`, più i campi di config necessari per
 calcolare bonus/OT lato overlay: `periods`, `bonus`, `timeoutsPerHalf`).
 
-## Nota critica su F-Droid
+## Licenze di terze parti
 
-MediaPipe Tasks Vision distribuisce librerie native precompilate (`.so`)
-che il build server F-Droid potrebbe non riuscire a ricostruire da sorgente,
-requisito centrale per l'accettazione. Vedi `fdroid/it.uncledan.baskincam.yml`
-per le opzioni di mitigazione. **Da chiarire con i maintainer F-Droid prima
-di investire tempo nell'integrazione detection**, se la pubblicazione su
-F-Droid è un requisito non negoziabile.
-
-RootEncoder (AGPL-3.0), NanoHTTPD (BSD-3-Clause), CameraX e Material
-Components (Apache-2.0, AndroidX puro, nessuna dipendenza Google Play
-Services) non presentano invece problemi di compatibilita'.
+RootEncoder è **AGPL-3.0**: è questa dipendenza a determinare la licenza
+dell'intero progetto (vedi sezione "Licenza" sotto). NanoHTTPD è
+BSD-3-Clause, CameraX e Material Components sono Apache-2.0 (AndroidX puro,
+nessuna dipendenza Google Play Services): nessuna di queste presenta
+problemi di compatibilità con AGPL-3.0.
 
 ## Licenza
 
-Vedi `LICENSE.md` - da finalizzare come AGPL-3.0-or-later o GPL-3.0-or-later
-prima della pubblicazione (vincolo di compatibilita' con RootEncoder).
+**AGPL-3.0-or-later** — vedi il file [`LICENSE`](LICENSE) per il testo
+completo. Scelta obbligata dalla dipendenza RootEncoder (AGPL-3.0): l'intero
+progetto deve essere distribuito sotto una licenza compatibile, e AGPL è
+anche la più aperta possibile a questo vincolo (permissiva quanto la
+combinazione con RootEncoder consente, e la variante "or-later" lascia
+aperta l'adozione di future versioni della licenza).
+
+Copyright (C) 2026 Daniele Lolli (UncleDan).
 
 ## Build e uso
 
@@ -161,7 +161,10 @@ Vedi le guide dedicate:
 - **[BUILD.md](BUILD.md)** - compilazione passo-passo (Android Studio consigliato)
 - **[USAGE.md](USAGE.md)** - uso quotidiano, sia solo-tabellone-di-rete che streaming completo
 
-Due workflow GitHub in `.github/workflows/` automatizzano gli APK: `beta.yml`
-(build di debug `-beta` a richiesta o su push del branch `beta`, artifact
-scaricabile) e `release.yml` (APK stabile firmato + `-beta`, allegati alla
-Release al push di un tag `v*`).
+Due workflow GitHub in `.github/workflows/` automatizzano gli APK:
+`release.yml` (al push di un tag `v*`, produce l'unico APK firmato
+`BaskinCam-<tag>-signed.apk` allegato alla Release — es. tag `v1.6` →
+`BaskinCam-v1.6-signed.apk`) e `beta.yml` (ad ogni push sul branch `beta`,
+produce `BaskinCam-beta-<short-sha>-unsigned.apk` come artifact scaricabile,
+confezionato automaticamente in `BaskinCam-beta-<short-sha>-unsigned.zip`).
+Dettagli completi in **[COMPILAZIONE-E-RELEASE.md](COMPILAZIONE-E-RELEASE.md)**.

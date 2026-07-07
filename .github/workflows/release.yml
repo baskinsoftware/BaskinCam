@@ -1,17 +1,20 @@
 name: Release APK
 
-# Si avvia al push di un tag "v*" (es. v1.5).
-# Produce:
-#  - un APK RELEASE firmato (se i segreti keystore sono configurati),
-#  - un APK DEBUG con suffisso "-beta",
-# entrambi allegati alla GitHub Release creata per il tag.
+# Si avvia al push di un tag "v*" (es. v1.6).
+# Produce ESATTAMENTE un asset, allegato alla GitHub Release creata per il tag:
+#   BaskinCam-<tag>-signed.apk
+# Esempio: il tag v1.6 produce "BaskinCam-v1.6-signed.apk".
 #
-# Segreti richiesti per la firma release (Settings -> Secrets -> Actions):
+# Questo workflow produce solo APK FIRMATI: se i 4 segreti di firma non sono
+# configurati, il job fallisce subito con un messaggio esplicito invece di
+# produrre un APK non firmato con un nome che dichiara il contrario.
+#
+# Segreti richiesti (Settings -> Secrets and variables -> Actions):
 #   KEYSTORE_BASE64    -> il file .jks codificato in base64
 #   KEYSTORE_PASSWORD  -> password dello store
 #   KEY_ALIAS          -> alias della chiave
 #   KEY_PASSWORD       -> password della chiave
-# Se i segreti mancano, l'APK release viene comunque prodotto ma NON firmato.
+# Vedi COMPILAZIONE-E-RELEASE.md §3 per la procedura di generazione/configurazione.
 
 on:
   push:
@@ -28,6 +31,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verifica segreti di firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          missing=""
+          [ -z "$KEYSTORE_BASE64" ] && missing="$missing KEYSTORE_BASE64"
+          [ -z "$KEYSTORE_PASSWORD" ] && missing="$missing KEYSTORE_PASSWORD"
+          [ -z "$KEY_ALIAS" ] && missing="$missing KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Segreti di firma mancanti:$missing"
+            echo "::error::release.yml produce solo APK firmati (BaskinCam-<tag>-signed.apk)."
+            echo "::error::Configura i 4 segreti prima di pushare un tag - vedi COMPILAZIONE-E-RELEASE.md §3."
+            exit 1
+          fi
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -37,16 +59,15 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Decodifica keystore (se presente)
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
+      - name: Decodifica keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/keystore.jks"
 
-      - name: Build APK release
+      - name: Build APK release firmato
         env:
-          KEYSTORE_FILE: ${{ secrets.KEYSTORE_BASE64 != '' && format('{0}/keystore.jks', runner.temp) || '' }}
+          KEYSTORE_FILE: ${{ runner.temp }}/keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -54,26 +75,18 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --no-daemon assembleRelease
 
-      - name: Rinomina APK release con la versione del tag
+      - name: Rinomina l'APK con il nome del tag
         run: |
           mkdir -p out
           cp app/build/outputs/apk/release/app-release*.apk \
-             "out/BaskinCam-${GITHUB_REF_NAME}.apk"
-
-      - name: Build APK debug (-beta)
-        run: ./gradlew --no-daemon assembleDebug
-
-      - name: Rinomina APK debug con suffisso -beta
-        run: |
-          cp app/build/outputs/apk/debug/app-debug.apk \
-             "out/BaskinCam-${GITHUB_REF_NAME}-beta.apk"
+             "out/BaskinCam-${GITHUB_REF_NAME}-signed.apk"
 
       - name: Pulisci keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/keystore.jks"
 
-      - name: Allega gli APK alla Release
+      - name: Allega l'APK alla Release
         uses: softprops/action-gh-release@v2
         with:
-          files: out/*.apk
+          files: out/BaskinCam-${{ github.ref_name }}-signed.apk
           generate_release_notes: true

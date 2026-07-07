@@ -1,7 +1,7 @@
 # Compilazione, firma e pubblicazione — BaskinCam
 
 Guida a come compilare l'app in locale, a come i workflow GitHub producono
-gli APK (stabile firmato e beta di debug) e alle note per la futura
+gli APK (release firmato, beta non firmato) e alle note per la futura
 pubblicazione su GitHub Releases e Google Play Store.
 
 Questo file **non è linkato nel README** ed è pensato per uso personale
@@ -41,11 +41,13 @@ Nella cartella `.github/workflows/`:
 
 | Workflow | File | Quando parte | Cosa produce |
 |---|---|---|---|
-| **Release APK** | `release.yml` | push di un tag `v*` | APK **stabile firmato** + APK **`-beta`** di debug, allegati alla Release |
-| **Beta APK (debug)** | `beta.yml` | "Run workflow" manuale, o push sul branch `beta` | APK **`-beta`** di debug come *artifact* scaricabile dal run (niente segreti) |
+| **Release APK** | `release.yml` | push di un tag `v*` | **un solo** APK, firmato: `BaskinCam-<tag>-signed.apk`, allegato alla Release. Fallisce subito se i 4 segreti di firma non sono configurati (vedi §3) |
+| **Beta APK (debug)** | `beta.yml` | ogni push sul branch `beta` (o "Run workflow" manuale) | `BaskinCam-beta-<short-sha>-unsigned.apk` come *artifact* del run, confezionato automaticamente in `BaskinCam-beta-<short-sha>-unsigned.zip` (niente segreti) |
 
 Idea: `beta.yml` per i test rapidi (nessuna configurazione), `release.yml`
-quando pubblichi una versione vera.
+quando pubblichi una versione vera — e a differenza di prima **richiede**
+i segreti di firma, perché il nome del file dichiara esplicitamente che è
+firmato.
 
 ### Flusso tipico a due push
 
@@ -98,9 +100,9 @@ secret**. Crea:
 | `KEY_PASSWORD` | password della chiave |
 
 Il workflow `release.yml` decodifica `KEYSTORE_BASE64` in un file temporaneo,
-lo usa per firmare, e lo cancella a fine job. Se i segreti non ci sono,
-l'APK release viene comunque prodotto ma **non firmato** (utile per un test
-del workflow, non installabile come aggiornamento firmato).
+lo usa per firmare, e lo cancella a fine job. Se anche uno solo dei 4 segreti
+manca, il job **fallisce subito** con un errore esplicito, invece di produrre
+un APK non firmato con un nome (`-signed`) che dichiarerebbe il contrario.
 
 ### 3.3 Firma in locale (opzionale)
 
@@ -117,8 +119,11 @@ export KEY_PASSWORD=...
 ## 4. Pubblicazione su GitHub Releases
 
 È già automatica: al push di un tag `v*`, `release.yml` crea la Release e vi
-allega `BaskinCam-vX.Y.apk` (stabile) e `BaskinCam-vX.Y-beta.apk` (debug),
-con note di rilascio generate automaticamente dai commit.
+allega **esattamente** `BaskinCam-<tag>-signed.apk` (es. tag `v1.6` →
+`BaskinCam-v1.6-signed.apk`), con note di rilascio generate automaticamente
+dai commit. Se i segreti di firma non sono configurati, il workflow fallisce
+subito invece di produrre un APK non firmato con un nome che dichiara il
+contrario.
 
 Per una release manuale senza aspettare il tag, puoi anche creare la Release
 dall'interfaccia GitHub e caricare a mano un APK compilato in locale.
@@ -182,9 +187,10 @@ Non è incluso ora: si aggiunge quando l'account Play Console è pronto.
 ## 6. Checklist rapida per una release
 
 - [ ] `versionCode` incrementato e `versionName` aggiornato in `app/build.gradle`
-- [ ] versione allineata anche in `README.md` e `fdroid/it.uncledan.baskincam.yml`
+- [ ] versione allineata anche in `README.md`
 - [ ] modello `efficientdet_lite0.tflite` presente in `app/src/main/assets/` (per il pan/zoom)
 - [ ] `StreamEncoder.kt` verificato contro la versione RootEncoder (vedi BUILD.md)
 - [ ] test rapido con `beta.yml` prima del tag
 - [ ] tag `vX.Y` che combacia col `versionName`
-- [ ] push del tag → verifica che `release.yml` alleghi entrambi gli APK
+- [ ] segreti di firma (`KEYSTORE_BASE64`/`KEYSTORE_PASSWORD`/`KEY_ALIAS`/`KEY_PASSWORD`) configurati, altrimenti `release.yml` fallisce subito
+- [ ] push del tag → verifica che `release.yml` alleghi `BaskinCam-<tag>-signed.apk`
