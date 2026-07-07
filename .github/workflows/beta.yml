@@ -16,10 +16,6 @@ name: Beta APK (debug)
 # sempre l'artifact scaricato dall'interfaccia "Actions" in uno zip che prende
 # il nome dell'artifact stesso (il parametro "name" di upload-artifact), quindi
 # basta caricare il solo file .apk con quel nome come artifact.
-#
-# NOTA: richiede che il Gradle Wrapper (gradlew + gradle/wrapper/*) sia
-# committato nel repository. Se manca, generalo con "gradle wrapper" o aprendo
-# una volta il progetto in Android Studio (vedi BUILD.md).
 
 on:
   workflow_dispatch:

@@ -21,10 +21,10 @@ verificate contro la versione dichiarata in `app/build.gradle`.
 1. Estrai lo zip del progetto in una cartella (es. `~/BaskinCam`)
 2. Apri Android Studio → **Open** → seleziona la cartella `BaskinCam`
    (quella con `settings.gradle` dentro, non `app/`)
-3. Android Studio propone di generare automaticamente il **Gradle
-   Wrapper** (`gradlew`, `gradle-wrapper.jar`) — accetta. Questo scheletro
-   non include il wrapper già pronto perché il jar è un binario che va
-   generato dal tuo ambiente
+3. Il **Gradle Wrapper** (`gradlew`, `gradlew.bat`, `gradle/wrapper/`) è già
+   incluso nel progetto (punta a Gradle 8.7, compatibile con AGP 8.5.2):
+   Android Studio lo userà automaticamente, nessuna generazione manuale
+   necessaria
 4. Attendi la sincronizzazione Gradle (barra in basso). La prima volta
    scarica le dipendenze (CameraX, MediaPipe, RootEncoder, NanoHTTPD):
    serve una connessione internet stabile, può richiedere qualche minuto
@@ -67,8 +67,7 @@ la versione dichiarata in `app/build.gradle`
 **Da Android Studio**: Build → Make Project (o il martelletto in alto).
 Se vuoi generare l'APK: Build → Build Bundle(s)/APK(s) → Build APK(s).
 
-**Da riga di comando** (dopo che Android Studio ha generato il wrapper
-al punto 2):
+**Da riga di comando**:
 ```bash
 ./gradlew assembleDebug
 ```

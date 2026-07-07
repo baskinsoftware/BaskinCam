@@ -28,10 +28,9 @@ Le build **debug** portano automaticamente il suffisso **`-beta`** nel
 `versionName` (`versionNameSuffix "-beta"` in `app/build.gradle`), così
 sono riconoscibili a colpo d'occhio rispetto alla release.
 
-> Nota: se non hai ancora il Gradle Wrapper (`gradlew`, `gradle/wrapper/
-> gradle-wrapper.jar`), generalo aprendo una volta il progetto in Android
-> Studio, oppure con `gradle wrapper` se hai Gradle installato. Vedi
-> BUILD.md per i dettagli.
+> Nota: il Gradle Wrapper (`gradlew`, `gradlew.bat`, `gradle/wrapper/*`) è
+> incluso nel progetto e punta a Gradle 8.7 (compatibile con AGP 8.5.2).
+> Nessuna generazione manuale necessaria.
 
 ---
 
