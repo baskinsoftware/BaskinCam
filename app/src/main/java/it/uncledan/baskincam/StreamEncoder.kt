@@ -70,8 +70,8 @@ class StreamEncoder(
     private val genericStream = GenericStream(context, connectChecker)
 
     fun start() {
-        val videoPrepared = genericStream.prepareVideo(width, height, bitrateBps, fps)
-        val audioPrepared = genericStream.prepareAudio()
+        val videoPrepared = genericStream.prepareVideo(width, height, bitrateBps, fps)      
+        val audioPrepared = genericStream.prepareAudio(bitrate = 128 * 1024, isStereo = true, sampleRate = 44100)
         if (!videoPrepared || !audioPrepared) {
             Log.e(TAG, "prepareVideo/prepareAudio falliti - controllo parametri encoder")
             return
@@ -81,7 +81,7 @@ class StreamEncoder(
         // frame gia' compositi (crop+overlay) qui invece di far catturare
         // la camera direttamente a RootEncoder (che verrebbe scavalcato,
         // dato che la cattura reale e' gestita da CameraController/CameraX).
-        encoderSurface = genericStream.getGlInterface().inputSurface
+        encoderSurface = genericStream.getGlInterface().surface
 
         genericStream.startStream(rtmpUrl)
         isStreaming = true
