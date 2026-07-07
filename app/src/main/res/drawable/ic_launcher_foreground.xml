@@ -5,9 +5,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <!-- Placeholder semplice: corpo macchina fotografica stilizzato in
-         verde LED (--green: #1ee63a, stesso colore del punteggio nel
-         tabellone), su sfondo nero. Da sostituire con un'icona definitiva
-         quando disponibile. -->
+         verde LED (colore "green" del tabellone: #1ee63a, stesso colore
+         del punteggio nel tabellone), su sfondo nero. Da sostituire con
+         un'icona definitiva quando disponibile. -->
     <path
         android:fillColor="#1ee63a"
         android:pathData="M30,40 L40,40 L45,32 L63,32 L68,40 L78,40 C81.3,40 84,42.7 84,46 L84,72 C84,75.3 81.3,78 78,78 L30,78 C26.7,78 24,75.3 24,72 L24,46 C24,42.7 26.7,40 30,40 Z"/>
