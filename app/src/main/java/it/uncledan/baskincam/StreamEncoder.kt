@@ -71,7 +71,7 @@ class StreamEncoder(
 
     fun start() {
         val videoPrepared = genericStream.prepareVideo(width, height, bitrateBps, fps)      
-        val audioPrepared = genericStream.prepareAudio(128 * 1024, true)
+        val audioPrepared = genericStream.prepareAudio(bitrate = 128 * 1024, isStereo = true)
         if (!videoPrepared || !audioPrepared) {
             Log.e(TAG, "prepareVideo/prepareAudio falliti - controllo parametri encoder")
             return
