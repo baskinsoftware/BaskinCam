@@ -7,17 +7,20 @@ plugins {
 }
 
 android {
-    namespace 'it.uncledan.baskincam'
-    compileSdk 34
+    namespace 'io.github.baskinsoftware.baskincam'
+    compileSdk 35
 
     defaultConfig {
-        applicationId "it.uncledan.baskincam"
+        applicationId "io.github.baskinsoftware.baskincam"
         minSdk 26
-        targetSdk 34
-        // Versioning: 1.2 su richiesta esplicita (deviazione puntuale dallo
-        // schema Mozilla a intero singolo puro - vedi nota in README.md).
-        versionCode 6
-        versionName "1.5"
+        targetSdk 35
+        // Versioning: AA.M[.patch][aN] con AA = anno a due cifre (26 = 2026),
+        // M = numero progressivo nell'anno e suffisso aN per le alpha
+        // (26.0a3 = terza alpha della 26.0) - vedi README.md.
+        // versionCode: intero progressivo richiesto da Android, da
+        // incrementare a ogni versione pubblicata (mai riusare un valore).
+        versionCode 7
+        versionName "26.0a3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

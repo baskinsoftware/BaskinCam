@@ -1,4 +1,4 @@
-package it.uncledan.baskincam
+package io.github.baskinsoftware.baskincam
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -36,8 +36,8 @@ import org.json.JSONObject
 class BaskinCamService : LifecycleService() {
 
     companion object {
-        const val ACTION_START = "it.uncledan.baskincam.action.START"
-        const val ACTION_STOP = "it.uncledan.baskincam.action.STOP"
+        const val ACTION_START = "io.github.baskinsoftware.baskincam.action.START"
+        const val ACTION_STOP = "io.github.baskinsoftware.baskincam.action.STOP"
         private const val NOTIFICATION_CHANNEL_ID = "baskincam_running"
         private const val NOTIFICATION_ID = 1
 

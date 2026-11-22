@@ -11,13 +11,13 @@ dello sviluppatore.
 
 ## 1. Compilazione in locale
 
-Requisiti: JDK 17 e Android SDK (`compileSdk 34`). Dalla cartella del
-progetto:
+Requisiti: JDK 17 e Android SDK (`compileSdk 35`, `targetSdk 35`). Dalla
+cartella del progetto:
 
 ```bash
 # APK di debug (firmato con la chiave di debug di Android) — versione "-beta"
 ./gradlew assembleDebug
-# output: app/build/outputs/apk/debug/app-debug.apk   (versionName es. 1.5-beta)
+# output: app/build/outputs/apk/debug/app-debug.apk   (versionName es. 26.0a3-beta)
 
 # APK release (firmato solo se imposti le variabili keystore, vedi §3)
 ./gradlew assembleRelease
@@ -40,7 +40,7 @@ Nella cartella `.github/workflows/`:
 
 | Workflow | File | Quando parte | Cosa produce |
 |---|---|---|---|
-| **Release APK** | `release.yml` | push di un tag `v*` | **un solo** APK, firmato: `BaskinCam-<tag>-signed.apk`, allegato alla Release. Fallisce subito se i 4 segreti di firma non sono configurati (vedi §3) |
+| **Release APK** | `release.yml` | push di un tag `v*` | **un solo** APK, firmato: `BaskinCam-<tag>-signed.apk`, allegato alla Release (titolo e testo presi dal README, vedi §4). Fallisce subito se i 4 segreti di firma non sono configurati (vedi §3) |
 | **Beta APK (debug)** | `beta.yml` | ogni push sul branch `beta` (o "Run workflow" manuale) | `BaskinCam-beta-<short-sha>-unsigned.apk` come *artifact* del run, confezionato automaticamente in `BaskinCam-beta-<short-sha>-unsigned.zip` (niente segreti) |
 
 Idea: `beta.yml` per i test rapidi (nessuna configurazione), `release.yml`
@@ -59,12 +59,12 @@ git push            # -> parte beta.yml, artifact scaricabile
 # 2) release vera
 git checkout main
 git merge beta
-git tag v1.5
-git push origin main --tags   # -> parte release.yml, APK allegati alla Release
+git tag v26.0a3
+git push origin main --tags   # -> parte release.yml, APK allegato alla Release
 ```
 
 Il tag deve combaciare con `versionName` in `app/build.gradle` (convenzione,
-non obbligo tecnico): tag `v1.5` ↔ `versionName "1.5"`.
+non obbligo tecnico): tag `v26.0a3` ↔ `versionName "26.0a3"`.
 
 ---
 
@@ -103,6 +103,16 @@ lo usa per firmare, e lo cancella a fine job. Se anche uno solo dei 4 segreti
 manca, il job **fallisce subito** con un errore esplicito, invece di produrre
 un APK non firmato con un nome (`-signed`) che dichiarerebbe il contrario.
 
+**Repository dell'organizzazione `baskinsoftware`** — i segreti vanno creati
+nel repository `baskinsoftware/BaskinCam` (non come segreti
+dell'organizzazione: ogni app ha la propria chiave di firma, da non
+condividere con gli altri repository). In **Organization settings → Actions**
+verifica inoltre che:
+- le action di terze parti usate dai workflow (`android-actions/setup-android`
+  e `softprops/action-gh-release`) siano consentite dalla policy dell'organizzazione;
+- il token dei workflow possa avere permessi di scrittura: `release.yml`
+  richiede `contents: write` per creare la Release.
+
 ### 3.3 Firma in locale (opzionale)
 
 ```bash
@@ -118,11 +128,17 @@ export KEY_PASSWORD=...
 ## 4. Pubblicazione su GitHub Releases
 
 È già automatica: al push di un tag `v*`, `release.yml` crea la Release e vi
-allega **esattamente** `BaskinCam-<tag>-signed.apk` (es. tag `v1.6` →
-`BaskinCam-v1.6-signed.apk`), con note di rilascio generate automaticamente
-dai commit. Se i segreti di firma non sono configurati, il workflow fallisce
-subito invece di produrre un APK non firmato con un nome che dichiara il
-contrario.
+allega **esattamente** `BaskinCam-<tag>-signed.apk` (es. tag `v26.0a3` →
+`BaskinCam-v26.0a3-signed.apk`). Se i segreti di firma non sono configurati,
+il workflow fallisce subito invece di produrre un APK non firmato con un nome
+che dichiara il contrario.
+
+Titolo e testo della Release vengono dal README:
+- **titolo** = primo titolo `#` del README + spazio + tag (es. `BaskinCam v26.0a3`);
+- **testo** = README a partire dalla prima riga non vuota dopo il titolo (i
+  link relativi ai file del repository diventano link assoluti al tag);
+- i tag con suffisso alpha o beta (es. `v26.0a3`, `v26.0b1`) sono
+  contrassegnati come **pre-release**.
 
 Per una release manuale senza aspettare il tag, puoi anche creare la Release
 dall'interfaccia GitHub e caricare a mano un APK compilato in locale.
@@ -136,7 +152,18 @@ ancora configurato: questa sezione è un promemoria.
 
 ### 5.1 Prerequisiti bloccanti
 
-- **Account Google Play Console** (costo una tantum ~25 USD).
+- **Account Google Play Console** (costo una tantum ~25 USD). Decidere prima
+  se pubblicare con un account personale o di organizzazione: i requisiti di
+  verifica sono diversi (da controllare sulle regole Google correnti), e
+  `baskinsoftware` è un'organizzazione GitHub, non un soggetto giuridico.
+- **applicationId definitivo**: `io.github.baskinsoftware.baskincam`. Dopo il
+  primo upload su Play Console non è più modificabile.
+- **Livello API**: `targetSdk` e `compileSdk` sono già a 35. Con Android 15 le
+  app che puntano a 35 sono disegnate a bordo schermo (edge-to-edge): da
+  verificare su un dispositivo Android 15 che i controlli in basso in
+  `MainActivity` non finiscano sotto la barra di navigazione. Verificare
+  anche il livello minimo richiesto da Play Console al momento della
+  pubblicazione.
 - **App Bundle (`.aab`), non APK**: il Play Store da tempo richiede il
   formato AAB per le nuove app. Va aggiunto un task di build:
   ```bash
@@ -161,7 +188,8 @@ ancora configurato: questa sezione è un promemoria.
   rete locale, non internet in chiaro). In alternativa, restringerlo con
   una network security config che consenta cleartext solo verso IP privati.
 - **Privacy policy**: obbligatoria se l'app usa camera/microfono, anche se
-  non raccoglie dati. Serve una URL pubblica (può stare su uncledan.it).
+  non raccoglie dati. Serve una URL pubblica (può stare sul sito
+  GitHub Pages dell'organizzazione, `baskinsoftware.github.io`).
 - **Data safety form**: dichiarare che i dati video/audio NON vengono
   raccolti da te (vanno direttamente all'endpoint RTMP scelto dall'utente).
 
@@ -190,6 +218,6 @@ Non è incluso ora: si aggiunge quando l'account Play Console è pronto.
 - [ ] modello `efficientdet_lite0.tflite` presente in `app/src/main/assets/` (per il pan/zoom)
 - [ ] `StreamEncoder.kt` verificato contro la versione RootEncoder (vedi BUILD.md)
 - [ ] test rapido con `beta.yml` prima del tag
-- [ ] tag `vX.Y` che combacia col `versionName`
+- [ ] tag `v<versionName>` (es. `v26.0a3`) che combacia col `versionName`
 - [ ] segreti di firma (`KEYSTORE_BASE64`/`KEYSTORE_PASSWORD`/`KEY_ALIAS`/`KEY_PASSWORD`) configurati, altrimenti `release.yml` fallisce subito
 - [ ] push del tag → verifica che `release.yml` alleghi `BaskinCam-<tag>-signed.apk`

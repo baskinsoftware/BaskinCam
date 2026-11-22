@@ -1,9 +1,16 @@
 name: Release APK
 
-# Si avvia al push di un tag "v*" (es. v1.6).
+# Si avvia al push di un tag "v*" (es. v26.0a3).
 # Produce ESATTAMENTE un asset, allegato alla GitHub Release creata per il tag:
 #   BaskinCam-<tag>-signed.apk
-# Esempio: il tag v1.6 produce "BaskinCam-v1.6-signed.apk".
+# Esempio: il tag v26.0a3 produce "BaskinCam-v26.0a3-signed.apk".
+#
+# Titolo e testo della Release vengono dal README.md:
+#   titolo = primo titolo "# " del README + spazio + tag (es. "BaskinCam v26.0a3")
+#   testo  = README a partire dalla prima riga non vuota dopo il titolo (i link
+#            relativi diventano assoluti verso il tag, altrimenti si romperebbero
+#            nella pagina della Release)
+# I tag alpha/beta (es. v26.0a3, v26.0b1) sono marcati come pre-release.
 #
 # Questo workflow produce solo APK FIRMATI: se i 4 segreti di firma non sono
 # configurati, il job fallisce subito con un messaggio esplicito invece di
@@ -30,6 +37,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Prepara titolo e testo della Release dal README
+        id: notes
+        run: |
+          set -euo pipefail
+          title=$(grep -m1 '^# ' README.md | sed 's/^# *//')
+          if [ -z "$title" ]; then
+            echo "::error::README.md senza titolo di primo livello ('# ...')"
+            exit 1
+          fi
+          # testo = README dalla prima riga non vuota dopo il primo titolo;
+          # i link relativi ai file del repo diventano assoluti verso il tag
+          awk 'found && !started && NF==0 {next} found {started=1; print} /^# / && !found {found=1}' README.md \
+            | sed -E "s#\]\((\./)?([A-Za-z0-9_][A-Za-z0-9_./-]*)\)#](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/\2)#g" \
+            > "$RUNNER_TEMP/release-body.md"
+          echo "name=$title $GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          # alpha/beta (es. v26.0a3, v26.0b1) -> pre-release
+          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+(\.[0-9]+)*[ab][0-9]+$ ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Verifica segreti di firma
         env:
@@ -85,8 +114,10 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/keystore.jks"
 
-      - name: Allega l'APK alla Release
+      - name: Crea la Release e allega l'APK
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ steps.notes.outputs.name }}
+          body_path: ${{ runner.temp }}/release-body.md
+          prerelease: ${{ steps.notes.outputs.prerelease }}
           files: out/BaskinCam-${{ github.ref_name }}-signed.apk
-          generate_release_notes: true

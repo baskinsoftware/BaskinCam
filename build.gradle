@@ -1,6 +1,6 @@
 // BaskinCam - build.gradle (root)
 // Autore: Daniele Lolli (UncleDan)
-// Versioning: stile Ubuntu YY.MM[.patch] -> vedi app/build.gradle
+// Versioning: AA.M[.patch][aN] (AA = anno a due cifre) -> vedi app/build.gradle
 
 buildscript {
     repositories {

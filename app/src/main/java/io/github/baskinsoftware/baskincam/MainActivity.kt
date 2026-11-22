@@ -1,4 +1,4 @@
-package it.uncledan.baskincam
+package io.github.baskinsoftware.baskincam
 
 import android.Manifest
 import android.content.ComponentName

@@ -3,13 +3,16 @@
 Regia automatica per streaming partite di Baskin da smartphone Android
 dismesso: pan/zoom digitale che segue la palla (detection cosmetica, non
 statistica) e overlay tabellone punteggio fedele allo stile della PWA
-[Tabellone Baskin](https://www.uncledan.it/tabellone-baskin/).
+[Tabellone Baskin EISI (PWA)](https://baskinsoftware.github.io/tabellone-baskin-eisi-pwa/).
 
-**Autore:** Daniele Lolli (UncleDan)
-**Versione:** 1.5
+**Autore:** Daniele Lolli (UncleDan)  
+**Organizzazione:** [baskinsoftware](https://github.com/baskinsoftware) — repository [baskinsoftware/BaskinCam](https://github.com/baskinsoftware/BaskinCam)  
+**Versione:** 26.0a3
 
-Versioning stile Mozilla (intero sequenziale), con `versionCode` interno
-progressivo (6) come richiesto dal build system Android.
+Versioning `AA.M[.patch][aN]`: `AA` è l'anno a due cifre (26 = 2026), `M` il
+numero progressivo nell'anno, `aN` il numero di alpha (26.0a3 = terza alpha
+della 26.0). Il `versionCode` interno è un intero progressivo (7) come
+richiesto dal build system Android.
 
 ## Stato del progetto
 
@@ -163,8 +166,8 @@ Vedi le guide dedicate:
 
 Due workflow GitHub in `.github/workflows/` automatizzano gli APK:
 `release.yml` (al push di un tag `v*`, produce l'unico APK firmato
-`BaskinCam-<tag>-signed.apk` allegato alla Release — es. tag `v1.6` →
-`BaskinCam-v1.6-signed.apk`) e `beta.yml` (ad ogni push sul branch `beta`,
+`BaskinCam-<tag>-signed.apk` allegato alla Release — es. tag `v26.0a3` →
+`BaskinCam-v26.0a3-signed.apk`) e `beta.yml` (ad ogni push sul branch `beta`,
 produce `BaskinCam-beta-<short-sha>-unsigned.apk` come artifact scaricabile,
 confezionato automaticamente in `BaskinCam-beta-<short-sha>-unsigned.zip`).
 Dettagli completi in **[COMPILAZIONE-E-RELEASE.md](COMPILAZIONE-E-RELEASE.md)**.
