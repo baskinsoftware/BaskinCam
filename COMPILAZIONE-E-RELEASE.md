@@ -108,8 +108,9 @@ nel repository `baskinsoftware/BaskinCam` (non come segreti
 dell'organizzazione: ogni app ha la propria chiave di firma, da non
 condividere con gli altri repository). In **Organization settings → Actions**
 verifica inoltre che:
-- le action di terze parti usate dai workflow (`android-actions/setup-android`
-  e `softprops/action-gh-release`) siano consentite dalla policy dell'organizzazione;
+- l'action di terze parti usata da `release.yml` (`softprops/action-gh-release`)
+  sia consentita dalla policy dell'organizzazione (le altre sono action
+  ufficiali `actions/*`);
 - il token dei workflow possa avere permessi di scrittura: `release.yml`
   richiede `contents: write` per creare la Release.
 
