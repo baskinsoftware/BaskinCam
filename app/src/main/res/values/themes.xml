@@ -1,6 +1,0 @@
-<resources>
-    <style name="Theme.BaskinCam" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowBackground">@android:color/black</item>
-    </style>
-</resources>
