@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BaskinCam"
+rootProject.name = "BaskinCam-EISI"
 include ':app'

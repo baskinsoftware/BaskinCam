@@ -1,4 +1,4 @@
-package io.github.baskinsoftware.baskincam
+package io.github.baskinsoftware.baskincameisi
 
 import android.content.Context
 import fi.iki.elonen.NanoHTTPD
@@ -180,7 +180,7 @@ class LocalControlServer(
         // per ora solo link al display e configurazione URL RTMP.
         return """
             <html><body style="font-family:sans-serif;max-width:480px;margin:24px auto;">
-            <h3>BaskinCam - Controllo remoto</h3>
+            <h3>BaskinCam EISI - Controllo remoto</h3>
             <p><a href="/display">Apri il tabellone</a></p>
             <h4>URL RTMP di destinazione</h4>
             <form onsubmit="return salvaRtmp(event)">

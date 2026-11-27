@@ -1,0 +1,135 @@
+# App Android (APK) di BaskinCam EISI.
+#   - tag v* (es. v26.0a3, v26.0) -> APK nella release del tag (pre-release per a/b/RC);
+#     il workflow Release lo avvia sul tag che crea (interruttore «App Android»)
+#   - lancio manuale     -> APK solo tra gli artifact dell'esecuzione
+#   - ogni esecuzione    -> APK anche tra gli artifact dell'esecuzione
+# Nessuna build automatica sui push dei rami (niente più APK «beta» a ogni push).
+# Senza secret di firma si produce l'APK «debug» (installabile, firma di sviluppo).
+# Con i secret KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD si
+# produce anche l'APK «release» firmato con la chiave del progetto.
+# La versione (APP_VER) è il versionName di app/build.gradle.
+name: App Android
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Cache delle dipendenze Gradle: dopo il primo build riuscito non si riscaricano
+      # (meno richieste a Maven Central, che a volte risponde 429 Too Many Requests).
+      # Scrittura attiva anche sui tag, da cui partono i build avviati da Release.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      # Solo in CI: le richieste a Maven Central passano dal mirror pubblico di Google,
+      # che non risponde 429 ai runner condivisi di GitHub. Il progetto non cambia.
+      - name: Mirror di Maven Central per Gradle
+        env:
+          MAVEN_MIRROR: https://maven-central.storage-download.googleapis.com/maven2/
+        run: |
+          mkdir -p "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d"
+          cat > "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d/maven-central-mirror.gradle" <<EOG
+          def mirror = '${MAVEN_MIRROR}'
+          def redirect = { repos ->
+            repos.withType(MavenArtifactRepository).configureEach { r ->
+              def u = r.url.toString()
+              if (u.startsWith('https://repo.maven.apache.org/maven2') || u.startsWith('https://repo1.maven.org/maven2')) r.url = mirror
+            }
+          }
+          beforeSettings { s ->
+            redirect(s.pluginManagement.repositories)
+            redirect(s.dependencyResolutionManagement.repositories)
+          }
+          allprojects {
+            redirect(buildscript.repositories)
+            redirect(repositories)
+          }
+          EOG
+          cat "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d/maven-central-mirror.gradle"
+
+      # L'Android SDK è preinstallato sui runner GitHub (ANDROID_HOME): si usa lo
+      # sdkmanager preinstallato per licenze e componenti necessari.
+      - name: Prepara Android SDK (preinstallato sul runner)
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;34.0.0"
+
+      - name: Versione
+        run: |
+          APP_VER=$(sed -nE 's/^[[:space:]]*versionName "([^"]+)".*/\1/p' app/build.gradle | head -1)
+          APP_CODE=$(sed -nE 's/^[[:space:]]*versionCode ([0-9]+).*/\1/p' app/build.gradle | head -1)
+          [ -n "$APP_VER" ] || { echo "::error::versionName non trovato in app/build.gradle"; exit 1; }
+          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$APP_VER" ]]; then
+            echo "::warning::Il tag $GITHUB_REF_NAME non combacia con versionName $APP_VER"
+          fi
+          echo "Versione $APP_VER (versionCode $APP_CODE)"
+          echo "APP_VER=$APP_VER" >> "$GITHUB_ENV"
+          echo "APP_CODE=$APP_CODE" >> "$GITHUB_ENV"
+
+      - name: APK debug
+        run: |
+          chmod +x gradlew
+          # fino a 3 tentativi, per gli errori temporanei di rete (es. 429 da Maven Central)
+          for i in 1 2 3; do
+            ./gradlew --no-daemon assembleDebug && exit 0
+            [ $i -lt 3 ] && { echo "::warning::Tentativo $i non riuscito, riprovo tra $((i*60)) secondi"; sleep $((i*60)); }
+          done
+          exit 1
+
+      - name: APK release firmato (se ci sono i secret)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "Nessun keystore: solo APK debug"; exit 0; fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+          for i in 1 2 3; do
+            ./gradlew --no-daemon assembleRelease && { rm -f "$KEYSTORE_FILE"; exit 0; }
+            [ $i -lt 3 ] && { echo "::warning::Tentativo $i non riuscito, riprovo tra $((i*60)) secondi"; sleep $((i*60)); }
+          done
+          rm -f "$KEYSTORE_FILE"
+          exit 1
+
+      - name: Raccoglie gli APK
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/debug/app-debug.apk "out/BaskinCam-EISI-${APP_VER}-debug.apk"
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk "out/BaskinCam-EISI-${APP_VER}.apk"
+          fi
+          ls -la out
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: BaskinCam-EISI-${{ env.APP_VER }}-android
+          path: out/
+
+      - name: Release del tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'RC') }}
+          files: out/*.apk

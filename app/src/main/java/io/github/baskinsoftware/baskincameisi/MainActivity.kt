@@ -1,4 +1,4 @@
-package io.github.baskinsoftware.baskincam
+package io.github.baskinsoftware.baskincameisi
 
 import android.Manifest
 import android.content.ComponentName

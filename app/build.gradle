@@ -1,4 +1,4 @@
-// BaskinCam - app/build.gradle
+// BaskinCam EISI - app/build.gradle
 // Autore: Daniele Lolli (UncleDan)
 
 plugins {
@@ -7,26 +7,37 @@ plugins {
 }
 
 android {
-    namespace 'io.github.baskinsoftware.baskincam'
+    namespace 'io.github.baskinsoftware.baskincameisi'
     compileSdk 35
 
     defaultConfig {
-        applicationId "io.github.baskinsoftware.baskincam"
+        applicationId "io.github.baskinsoftware.baskincameisi"
         minSdk 26
         targetSdk 35
-        // Versioning: AA.M[.patch][aN] con AA = anno a due cifre (26 = 2026),
-        // M = numero progressivo nell'anno e suffisso aN per le alpha
-        // (26.0a3 = terza alpha della 26.0) - vedi README.md.
-        // versionCode: intero progressivo richiesto da Android, da
-        // incrementare a ogni versione pubblicata (mai riusare un valore).
-        versionCode 7
+        // Regola di versioning dei progetti Baskin (v3): AA.M[.P[.W]] con eventuale
+        // suffisso aN | bN | RCN (26.0a3 = terza alpha della 26.0).
+        // versionCode = (((AA*100 + M)*100 + P)*10 + W)*100 + contatore, con
+        // contatore 01-98 per le pre-release (il numero del suffisso) e 99 per la
+        // finale: 26.0a3 -> 260000003, 26.0 -> 260000099, 26.0.1 -> 260001099.
+        // Valori letterali (F-Droid): la coerenza e' verificata qui sotto.
+        versionCode 260000003
         versionName "26.0a3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Verifica in build che versionCode rispetti la formula della regola v3.
+    def vn = defaultConfig.versionName
+    def vc = defaultConfig.versionCode
+    def mv = (vn =~ /^(\d{2})\.(\d{1,2})(?:\.(\d{1,2})(?:\.([1-9]))?)?(?:(a|b|RC)(\d{1,2}))?$/)
+    if (!mv.matches()) throw new GradleException("versionName non conforme alla regola di versioning: " + vn)
+    def alto = ((((mv.group(1) as int) * 100 + (mv.group(2) as int)) * 100 + ((mv.group(3) ?: '0') as int)) * 10 + ((mv.group(4) ?: '0') as int)) * 100
+    def cnt = vc - alto
+    if (mv.group(5) ? !(cnt >= 1 && cnt <= 98) : cnt != 99)
+        throw new GradleException("versionCode " + vc + " non coerente con versionName " + vn + " (atteso " + alto + " + contatore " + (mv.group(5) ? "01-98" : "99") + ")")
+
     // Firma release opzionale via variabili d'ambiente (usate dalla GitHub
-    // Action release.yml). In locale, senza queste variabili, assembleRelease
+    // Action app-android.yml). In locale, senza queste variabili, assembleRelease
     // produce un APK non firmato: per l'uso quotidiano si usa assembleDebug.
     signingConfigs {
         release {
@@ -42,9 +53,9 @@ android {
 
     buildTypes {
         debug {
-            // le build di debug portano il suffisso "-beta" nel versionName,
+            // le build di debug portano il suffisso "-debug" nel versionName,
             // riconoscibili a colpo d'occhio rispetto alla release
-            versionNameSuffix "-beta"
+            versionNameSuffix "-debug"
         }
         release {
             minifyEnabled false // nessuna minificazione/offuscamento per ora

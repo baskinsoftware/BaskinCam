@@ -1,4 +1,4 @@
-package io.github.baskinsoftware.baskincam
+package io.github.baskinsoftware.baskincameisi
 
 /**
  * PanZoomController - calcola la regione di crop (pan+zoom digitale) da applicare

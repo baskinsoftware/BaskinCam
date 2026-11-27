@@ -1,4 +1,4 @@
-# BaskinCam - Guida alla compilazione
+# BaskinCam EISI - Guida alla compilazione
 
 **Premessa importante**: questo codice è stato scritto e revisionato
 manualmente per correttezza sintattica (inclusi due bug reali di
@@ -18,8 +18,8 @@ verificate contro la versione dichiarata in `app/build.gradle`.
 
 ## 2. Primo apertura del progetto
 
-1. Estrai lo zip del progetto in una cartella (es. `~/BaskinCam`)
-2. Apri Android Studio → **Open** → seleziona la cartella `BaskinCam`
+1. Estrai lo zip del progetto in una cartella (es. `~/BaskinCam-EISI`)
+2. Apri Android Studio → **Open** → seleziona la cartella `BaskinCam-EISI`
    (quella con `settings.gradle` dentro, non `app/`)
 3. Il **Gradle Wrapper** (`gradlew`, `gradlew.bat`, `gradle/wrapper/`) è già
    incluso nel progetto (punta a Gradle 8.7, compatibile con AGP 8.5.2):
