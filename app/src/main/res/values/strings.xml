@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BaskinCam</string>
+    <string name="app_name">BaskinCam EISI</string>
     <string name="mode_auto">Auto</string>
     <string name="mode_manual">Manuale</string>
     <string name="btn_start">Avvia</string>
@@ -7,7 +7,7 @@
     <string name="btn_screen_off">Spegni schermo</string>
     <string name="hint_rtmp_url">rtmp://server/stream-key</string>
     <string name="btn_save">Salva</string>
-    <string name="notification_channel_name">BaskinCam attivo</string>
-    <string name="notification_title_recording">BaskinCam in registrazione</string>
+    <string name="notification_channel_name">BaskinCam EISI attivo</string>
+    <string name="notification_title_recording">BaskinCam EISI in registrazione</string>
     <string name="notification_text_tap_to_open">Tocca per aprire i controlli</string>
 </resources>

@@ -1,13 +1,13 @@
-# BaskinCam - Guida all'uso
+# BaskinCam EISI - Guida all'uso
 
-BaskinCam si usa in due modalità indipendenti, attivabili anche insieme:
+BaskinCam EISI si usa in due modalità indipendenti, attivabili anche insieme:
 
 - **Solo tabellone di rete**: nessuno streaming video, solo il punteggio
   di Tabellone Baskin visualizzato su TV/tablet in palestra
 - **Streaming completo**: video con pan/zoom automatico sulla palla e
   overlay tabellone, trasmesso in diretta (YouTube Live, Facebook Live, ecc.)
 
-In entrambi i casi il telefono con BaskinCam e il dispositivo che gestisce
+In entrambi i casi il telefono con BaskinCam EISI e il dispositivo che gestisce
 Tabellone Baskin devono stare **sulla stessa rete Wi-Fi locale**.
 
 ---
@@ -19,7 +19,7 @@ riprendere la partita.
 
 ### Passi
 
-1. **Apri BaskinCam** sul telefono dedicato, concedi i permessi richiesti
+1. **Apri BaskinCam EISI** sul telefono dedicato, concedi i permessi richiesti
 2. **Non serve configurare l'URL RTMP** — lascia il campo vuoto
 3. Tocca **Avvia**: la pipeline parte (camera, overlay, server locale),
    anche se lo streaming resta spento per mancanza di URL
@@ -46,7 +46,7 @@ riprendere la partita.
 - Se la Wi-Fi ha un problema momentaneo, i display mostrano l'ultimo
   stato noto invece di azzerarsi, e si riallineano da soli appena la
   rete torna
-- Per fermare tutto: torna nell'app BaskinCam e tocca **Ferma**, oppure
+- Per fermare tutto: torna nell'app BaskinCam EISI e tocca **Ferma**, oppure
   da un browser vai su `http://<ip-del-telefono>:8080/` e usa il link
   di controllo remoto
 
@@ -77,7 +77,7 @@ riprendere la partita.
 
 ### Configurazione
 
-1. Apri BaskinCam, incolla l'URL RTMP completo nel campo dedicato, tocca
+1. Apri BaskinCam EISI, incolla l'URL RTMP completo nel campo dedicato, tocca
    **Salva**
 2. Tocca **Avvia**: parte cattura, detection, pan/zoom automatico,
    overlay e streaming verso l'URL configurato
@@ -97,7 +97,7 @@ riprendere la partita.
   Foreground Service — non serve tenere lo schermo acceso durante tutta
   la partita
 - **Riprendere il controllo**: riaccendi lo schermo e riapri l'app,
-  BaskinCam si riaggancia automaticamente alla pipeline già in corso
+  BaskinCam EISI si riaggancia automaticamente alla pipeline già in corso
 
 ### Cambiare URL RTMP a partita in corso
 

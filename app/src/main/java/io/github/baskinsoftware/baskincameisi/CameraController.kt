@@ -1,4 +1,4 @@
-package it.uncledan.baskincam
+package io.github.baskinsoftware.baskincameisi
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,15 +1,37 @@
-# BaskinCam
+# BaskinCam EISI
+
+## Cos'è il Baskin
+
+Il Baskin è uno sport fondato sul basket, inclusivo per progettazione, che prevede per regolamento la partecipazione simultanea degli atleti senza divisione in categorie grazie ad un sistema basato sui ruoli in campo: atleti di entrambi i sessi, con e senza disabilità, con disabilità fisiche e/o cognitive giocano insieme sullo stesso campo la stessa partita. Il regolamento del Baskin è una proprieta intellettuale di *Associazione Baskin* ed i campionati in Italia sono organizzati da *EISI - Ente Italiano Sport Inclusivi*, Ente di Promozione Paralimpica riconosciuto dal *Comitato Italiano Paralimpico*.
+
+Per approfondire: [baskin.it](https://baskin.it) · [eisi.it](https://eisi.it)
+
+> I marchi «EISI» e «Baskin» sono registrati rispettivamente da Ente
+> Italiano Sport Inclusivi e Associazione Baskin.
+
+---
+
+## L'app
 
 Regia automatica per streaming partite di Baskin da smartphone Android
 dismesso: pan/zoom digitale che segue la palla (detection cosmetica, non
 statistica) e overlay tabellone punteggio fedele allo stile della PWA
-[Tabellone Baskin](https://www.uncledan.it/tabellone-baskin/).
+[Tabellone Baskin EISI (PWA)](https://baskinsoftware.github.io/tabellone-baskin-eisi-pwa/).
 
-**Autore:** Daniele Lolli (UncleDan)
-**Versione:** 1.5
+**Autore:** Daniele Lolli (UncleDan)  
+**Organizzazione:** [baskinsoftware](https://github.com/baskinsoftware) — repository [baskinsoftware/BaskinCam-EISI](https://github.com/baskinsoftware/BaskinCam-EISI)  
+**Versione:** 26.0a3
 
-Versioning stile Mozilla (intero sequenziale), con `versionCode` interno
-progressivo (6) come richiesto dal build system Android.
+Versioning secondo la regola comune ai progetti Baskin (v3): `AA.M[.P[.W]]`
+con eventuale suffisso `aN`, `bN` o `RCN`. `AA` è l'anno a due cifre
+(26 = 2026), `M` il numero progressivo di release dell'anno da 0, `P` la
+patch (scritta solo se serve); `aN` è il numero di alpha, che prosegue la
+numerazione delle versioni già rilasciate con i nomi precedenti (26.0a3 =
+terza versione rilasciata, ancora alpha). Il `versionCode` Android segue la
+formula `(((AA×100 + M)×100 + P)×10 + W)×100 + contatore` (contatore 01–98
+per le pre-release, 99 per la finale): `26.0a3` → `260000003`, `26.0` →
+`260000099`. Gradle verifica in build che versionCode e versionName siano
+coerenti. Identificativo dell'app: `io.github.baskinsoftware.baskincameisi`.
 
 ## Stato del progetto
 
@@ -76,7 +98,7 @@ reali, non generici).
 CameraX (4K) --> BallTracker (MediaPipe, detection a bassa risoluzione)
               --> PanZoomController (crop smoothed, auto/manuale)
               --> crop + scala 1080p
-              --> OverlayRenderer (WebView, tabellone LED stile Tabellone Baskin)
+              --> OverlayRenderer (WebView, tabellone LED stile Tabellone Baskin EISI)
               --> StreamEncoder (RootEncoder, push RTMP)
 ```
 
@@ -84,7 +106,7 @@ Tutta la pipeline gira in `BaskinCamService`, un Foreground Service che
 continua a funzionare a schermo spento (wake lock parziale).
 
 `LocalControlServer` espone un server HTTP locale (NanoHTTPD) sulla LAN per:
-- ricevere il push del punteggio da Tabellone Baskin (`POST /score`)
+- ricevere il push del punteggio da Tabellone Baskin EISI (`POST /score`)
 - servire il tabellone come pagina web (`GET /display`) apribile da qualunque
   browser sulla stessa rete — TV, tablet, un altro telefono — con lo stesso
   identico rendering usato per l'overlay video (polling di `GET /status`,
@@ -128,10 +150,10 @@ reale dell'hardware.
 | `AppPreferences.kt` | Persistenza URL RTMP (SharedPreferences) |
 | `assets/overlay/index.html` | Display tabellone, porting fedele da Tabellone Baskin v1.13.3 |
 
-## Integrazione con Tabellone Baskin
+## Integrazione con Tabellone Baskin EISI
 
 La PWA deve essere modificata per inviare una `POST` verso l'IP locale del
-telefono BaskinCam ad ogni variazione di stato, con lo stesso schema dello
+telefono BaskinCam EISI ad ogni variazione di stato, con lo stesso schema dello
 stato interno (`scores`, `fouls`, `timeoutsUsed`, `names`, `colors`,
 `period`, `remainingMs`, `running`, più i campi di config necessari per
 calcolare bonus/OT lato overlay: `periods`, `bonus`, `timeoutsPerHalf`).
@@ -161,10 +183,16 @@ Vedi le guide dedicate:
 - **[BUILD.md](BUILD.md)** - compilazione passo-passo (Android Studio consigliato)
 - **[USAGE.md](USAGE.md)** - uso quotidiano, sia solo-tabellone-di-rete che streaming completo
 
-Due workflow GitHub in `.github/workflows/` automatizzano gli APK:
-`release.yml` (al push di un tag `v*`, produce l'unico APK firmato
-`BaskinCam-<tag>-signed.apk` allegato alla Release — es. tag `v1.6` →
-`BaskinCam-v1.6-signed.apk`) e `beta.yml` (ad ogni push sul branch `beta`,
-produce `BaskinCam-beta-<short-sha>-unsigned.apk` come artifact scaricabile,
-confezionato automaticamente in `BaskinCam-beta-<short-sha>-unsigned.zip`).
+Due workflow GitHub in `.github/workflows/`, gli stessi della PWA
+Tabellone Baskin EISI, automatizzano le release:
+- **Release** (`release.yml`, lancio manuale da *Actions → Release → Run
+  workflow*): crea tag `v<versione>` e Release dal README del ramo scelto
+  (pre-release per `a`, `b` e `RC`) e, con l'interruttore «App Android»,
+  avvia sul nuovo tag il workflow dell'APK;
+- **App Android** (`app-android.yml`, sui tag `v*` o a mano): produce
+  `BaskinCam-EISI-<versione>-debug.apk` e, se ci sono i segreti di firma,
+  `BaskinCam-EISI-<versione>.apk` firmato; li allega alla Release del tag e
+  li lascia anche tra gli artifact dell'esecuzione.
+
+Nessuna build automatica sui push dei rami.
 Dettagli completi in **[COMPILAZIONE-E-RELEASE.md](COMPILAZIONE-E-RELEASE.md)**.
